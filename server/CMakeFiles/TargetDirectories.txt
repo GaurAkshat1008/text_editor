@@ -1,0 +1,3 @@
+D:/Programming/cpp/text_editor/server/CMakeFiles/backend.dir
+D:/Programming/cpp/text_editor/server/CMakeFiles/ALL_BUILD.dir
+D:/Programming/cpp/text_editor/server/CMakeFiles/ZERO_CHECK.dir
