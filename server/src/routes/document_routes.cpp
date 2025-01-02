@@ -61,7 +61,9 @@ void DocumentRoutes::handleUpdateDocument(
     try
     {
         auto data = json::parse(req.body());
-        int id = 1; // TODO: Extract ID from URL params
+        auto [path, queryString] = RouteManager::splitPathAndQuery(std::string(req.target()));
+        QueryParams params = RouteManager::parseQueryParameters(queryString);
+        int id = std::stoi(params["id"]);
         auto result = documentController.updateDocument(id, data);
 
         res.result(http::status::ok);
@@ -130,9 +132,9 @@ void DocumentRoutes::handleSearchDocuments(
 void DocumentRoutes::registerRoutes()
 {
     Logger::info({"Registering document routes"});
-    RouteManager::addRoute("/api/documents", "GET", handleSearchDocuments);
-    RouteManager::addRoute("/api/documents/:id", "GET", handleGetDocument);
+    RouteManager::addRoute("/api/documents/search", "GET", handleSearchDocuments);
+    RouteManager::addRoute("/api/documents", "GET", handleGetDocument);
     RouteManager::addRoute("/api/documents", "POST", handleCreateDocument);
-    RouteManager::addRoute("/api/documents/:id", "PUT", handleUpdateDocument);
-    RouteManager::addRoute("/api/documents/:id", "DELETE", handleDeleteDocument);
+    RouteManager::addRoute("/api/documents", "PUT", handleUpdateDocument);
+    RouteManager::addRoute("/api/documents", "DELETE", handleDeleteDocument);
 }

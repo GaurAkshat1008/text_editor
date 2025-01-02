@@ -16,7 +16,7 @@ void signalHandler(int signal)
 {
     if (g_server)
     {
-        Logger::debug({"Shutting down server"});
+        Logger::warn({"Shutting down server"});
         g_server->stop();
         exit(signal);
     }

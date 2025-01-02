@@ -19,14 +19,7 @@ bool RouteManager::handleRequest(
     std::string method = std::string(req.method_string());
     Logger::debug({"Handling request: " + method + " " + path + " with query: " + queryString});
 
-    // Parse query parameters
-    QueryParams params = parseQueryParameters(queryString);
     // First try exact match
-    if (routes.count(path) > 0 && routes[path].count(method) > 0)
-    {
-        routes[path][method](req, res);
-        return true;
-    }
     if (routes.count(path) > 0 && routes[path].count(method) > 0)
     {
         routes[path][method](req, res);

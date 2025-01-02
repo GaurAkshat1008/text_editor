@@ -29,6 +29,7 @@ add_executable(backend
     src/routes/document_routes.cpp
     src/server/route_manager.cpp
     src/db/db_migration.cpp
+    src/utils/timestampConverter.cpp
 )
 
 target_include_directories(backend PRIVATE 

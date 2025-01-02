@@ -146,7 +146,7 @@ void DatabaseMigration::recordMigration(pqxx::connection &conn, const std::strin
     {
         pqxx::work txn(conn);
         SQLBuilder builder;
-        std::string query = builder.insert("migrations", {"filename"}, {"'" + filename + "'"}).build();
+        std::string query = builder.insert("migrations", {"filename"}, {filename}).build();
         txn.exec_params(query);
         txn.commit();
         Logger::debug({"Recorded migration execution: " + filename});
