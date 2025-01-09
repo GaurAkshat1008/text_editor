@@ -109,12 +109,12 @@ void DocumentRoutes::handleSearchDocuments(
         auto params = RouteManager::parseQueryParameters(queryString);
 
         std::string query = params["q"];
-        std::string owner = params["owner"];
+        std::string author_id = params["author_id"];
         if (query.empty())
         {
             throw std::invalid_argument("Query parameter 'q' is required");
         }
-        auto result = documentController.searchDocuments(query, owner);
+        auto result = documentController.searchDocuments(query, std::stoi(author_id));
 
         res.result(http::status::ok);
         res.set(http::field::content_type, "application/json");
@@ -132,9 +132,9 @@ void DocumentRoutes::handleSearchDocuments(
 void DocumentRoutes::registerRoutes()
 {
     Logger::info({"Registering document routes"});
-    RouteManager::addRoute("/api/documents/search", "GET", handleSearchDocuments);
-    RouteManager::addRoute("/api/documents", "GET", handleGetDocument);
-    RouteManager::addRoute("/api/documents", "POST", handleCreateDocument);
-    RouteManager::addRoute("/api/documents", "PUT", handleUpdateDocument);
-    RouteManager::addRoute("/api/documents", "DELETE", handleDeleteDocument);
+    RouteManager::addRoute("/documents/search", "GET", handleSearchDocuments);
+    RouteManager::addRoute("/documents", "GET", handleGetDocument);
+    RouteManager::addRoute("/documents", "POST", handleCreateDocument);
+    RouteManager::addRoute("/documents", "PUT", handleUpdateDocument);
+    RouteManager::addRoute("/documents", "DELETE", handleDeleteDocument);
 }

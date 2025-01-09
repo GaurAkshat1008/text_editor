@@ -123,7 +123,7 @@ bool Document::remove()
 }
 
 std::vector<Document> Document::search(
-    const std::string &query, const std::string &owner, bool includePrivate)
+    const std::string &query, int author_id, bool includePrivate)
 {
     try
     {
@@ -131,9 +131,9 @@ std::vector<Document> Document::search(
         pqxx::work txn(*conn);
         SQLBuilder builder;
         auto query_builder = builder.select({"*"}).from("documents").where({{"title", query, "LIKE"}});
-        if (!owner.empty())
+        if (author_id != -1)
         {
-            query_builder.where({{"owner", owner, "="}});
+            query_builder.where({{"author_id", std::to_string(author_id), "="}});
         }
         if (!includePrivate)
         {
@@ -145,7 +145,7 @@ std::vector<Document> Document::search(
         std::vector<Document> documents;
         for (auto row : result)
         {
-            Document doc(row["title"].as<std::string>(), row["content"].as<std::string>(), row["owner"].as<std::string>());
+            Document doc(row["title"].as<std::string>(), row["content"].as<std::string>(), row["author_id"].as<std::string>());
             doc.setId(row["id"].as<int>());
             doc.created_at = convertTimestampToTimeT(row["created_at"].as<std::string>());
             doc.updated_at = convertTimestampToTimeT(row["updated_at"].as<std::string>());

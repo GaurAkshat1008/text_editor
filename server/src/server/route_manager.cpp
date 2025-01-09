@@ -7,8 +7,12 @@ std::map<std::string, std::map<std::string, RouteHandler>> RouteManager::routes;
 
 void RouteManager::addRoute(const std::string &path, const std::string &method, RouteHandler handler)
 {
-    routes[path][method] = handler;
-    Logger::info({"Registered route: " + method + " " + path});
+    std::string finalPath = path;
+    finalPath = std::regex_replace(path, std::regex("\\{([^}]*)\\}"), "([^/]*)");
+    finalPath = "^" + path + "$";
+    finalPath = "/api" + path;
+    routes[finalPath][method] = handler;
+    Logger::info({"Registered route: " + method + " " + finalPath});
 }
 
 bool RouteManager::handleRequest(

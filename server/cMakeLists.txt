@@ -20,16 +20,27 @@ message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
 
 add_executable(backend 
     src/main.cpp
+
     src/server/http_server.cpp
+    src/server/route_manager.cpp
+
     src/db/db_manager.cpp
+    src/db/db_migration.cpp
+
     src/utils/logger.cpp
     src/utils/sqlbuilder.cpp
-    src/models/document.cpp
-    src/controllers/document_controller.cpp
-    src/routes/document_routes.cpp
-    src/server/route_manager.cpp
-    src/db/db_migration.cpp
     src/utils/timestampConverter.cpp
+    src/utils/jwtManager.cpp
+
+    src/models/document.cpp
+    src/models/authors.cpp
+
+    src/controllers/document_controller.cpp
+    src/controllers/auth_controller.cpp
+    src/controllers/author_controller.cpp
+
+    src/routes/auth_routes.cpp
+    src/routes/document_routes.cpp
 )
 
 target_include_directories(backend PRIVATE 

@@ -7,7 +7,7 @@
 #include <functional>
 
 Author::Author(const std::string &name, const std::string &email, const std::string &password)
-    : name(name), email(email)
+    : name(name), email(email), is_deleted(false), password(password)
 {
     id = -1;
 }
@@ -24,7 +24,8 @@ void Author::setEmail(const std::string &newEmail)
 
 void Author::setPassword(const std::string &newPassword)
 {
-    password = newPassword;
+    std::string hashedPassword = std::to_string(std::hash<std::string>{}(newPassword));
+    password = hashedPassword;
 }
 
 void Author::setDeleted(bool status)
@@ -39,12 +40,11 @@ bool Author::save()
     SQLBuilder builder;
     try
     {
-        std::string hashedPassword = std::to_string(std::hash<std::string>{}(password));
         if (id == -1)
         {
             std::vector<std::string> columns = {"name", "email", "password"};
-            std::vector<std::string> values = {"'" + name + "'", "'" + email + "'", "'" + hashedPassword + "'"};
-            std::string sql = builder.insert("authors", columns, values).returning("id").build();
+            std::vector<std::string> values = {name, email, password};
+            std::string sql = builder.insert("authors", columns, values).returning({"id"}).build();
             auto result = txn.exec(sql);
             if (result.empty() || result[0].empty())
             {
@@ -57,7 +57,7 @@ bool Author::save()
             std::vector<std::pair<std::string, std::string>> updates = {
                 {"name", name},
                 {"email", email},
-                {"password", hashedPassword}};
+                {"password", password}};
 
             std::string updateSql = builder
                                         .update("authors")
@@ -103,6 +103,58 @@ bool Author::remove()
     }
 }
 
+std::vector<Author> Author::search(const std::string &query)
+{
+    std::vector<Author> authors;
+    try
+    {
+        auto conn = DatabaseManager::getInstance().getConnection();
+        pqxx::work txn(*conn);
+        SQLBuilder builder;
+        std::string sql = builder.select({"*"}).from("authors").where({{"name", query, "LIKE"}}).build();
+        auto result = txn.exec(sql);
+        txn.commit();
+        for (auto row : result)
+        {
+            Author author(row["name"].as<std::string>(), row["email"].as<std::string>(), "");
+            author.id = row["id"].as<int>();
+            author.is_deleted = row["is_deleted"].as<bool>();
+            authors.push_back(author);
+        }
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error({"Failed to search authors: " + std::string(e.what())});
+    }
+    return authors;
+}
+
+std::vector<Author> Author::all()
+{
+    std::vector<Author> authors;
+    try
+    {
+        auto conn = DatabaseManager::getInstance().getConnection();
+        pqxx::work txn(*conn);
+        SQLBuilder builder;
+        std::string sql = builder.select({"*"}).from("authors").where({{"is_deleted", "false", "="}}).build();
+        auto result = txn.exec(sql);
+        txn.commit();
+        for (auto row : result)
+        {
+            Author author(row["name"].as<std::string>(), row["email"].as<std::string>(), "");
+            author.id = row["id"].as<int>();
+            author.is_deleted = row["is_deleted"].as<bool>();
+            authors.push_back(author);
+        }
+    }
+    catch (const std::exception &e)
+    {
+        Logger::error({"Failed to get all authors: " + std::string(e.what())});
+    }
+    return authors;
+}
+
 Author Author::findById(int id)
 {
     try
@@ -122,11 +174,6 @@ Author Author::findById(int id)
         author.id = row["id"].as<int>();
         author.is_deleted = row["is_deleted"].as<bool>();
         return author;
-    }
-    catch (const std::exception &e)
-    {
-        Logger::error({"Failed to find author by ID: " + std::string(e.what())});
-        return Author("", "", "");
     }
     catch (const std::exception &e)
     {
@@ -172,14 +219,13 @@ std::vector<std::shared_ptr<Document>> Author::getDocuments()
         SQLBuilder builder;
         std::string sql = builder.select({"*"}).from("documents").where({{"author_id", std::to_string(id), "="}}).build();
         auto result = txn.exec(sql);
-        
+
         for (auto row : result)
         {
             auto doc = std::make_shared<Document>(
                 row["title"].as<std::string>(),
                 row["content"].as<std::string>(),
-                row["owner"].as<std::string>()
-            );
+                row["owner"].as<std::string>());
             doc->setId(row["id"].as<int>());
             doc->setAuthorId(row["author_id"].as<int>());
             // Set other fields...

@@ -13,7 +13,7 @@ public:
     nlohmann::json getDocument(int id);
     nlohmann::json updateDocument(int id, const nlohmann::json& updates);
     nlohmann::json deleteDocument(int id);
-    nlohmann::json searchDocuments(const std::string& query, const std::string& owner);
+    nlohmann::json searchDocuments(const std::string& query, int author_id);
     
 private:
     nlohmann::json formatDocumentResponse(const Document& doc);

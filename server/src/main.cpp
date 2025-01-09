@@ -3,6 +3,7 @@
 #include <db/db_manager.hpp>
 #include <config/app_config.hpp>
 #include <utils/logger.hpp>
+#include <routes/auth_routes.hpp>
 #include <routes/document_routes.hpp>
 #include <db/db_migration.hpp>
 
@@ -46,6 +47,7 @@ int main()
 
         // Register routes
         DocumentRoutes::registerRoutes();
+        AuthRoutes::registerRoutes();
 
         g_server = std::make_unique<HttpServer>(
             io_context,

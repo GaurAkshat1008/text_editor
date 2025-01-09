@@ -43,6 +43,6 @@ public:
     // Database operations
     bool save();
     bool remove();
-    static std::vector<Document> search(const std::string &query, const std::string &owner, bool includePrivate);
+    static std::vector<Document> search(const std::string &query, const int author_id, bool includePrivate);
     static std::shared_ptr<Document> findById(int id);
 };

@@ -125,12 +125,12 @@ nlohmann::json DocumentController::deleteDocument(int id)
 //     return Document::search("", "", false);
 // }
 
-nlohmann::json DocumentController::searchDocuments(const std::string &query, const std::string &owner)
+nlohmann::json DocumentController::searchDocuments(const std::string &query, int author_id)
 {
     try
     {
         Logger::info({"Searching documents with query: " + query});
-        auto documents = Document::search(query, owner, false);
+        auto documents = Document::search(query, author_id, false);
         if (documents.empty())
         {
             return formatErrorResponse("No documents found");
@@ -141,7 +141,7 @@ nlohmann::json DocumentController::searchDocuments(const std::string &query, con
             response.push_back(json{
                 {"id", doc.getId()},
                 {"title", doc.getTitle()},
-                {"owner", doc.getOwner()},
+                {"author_id", doc.getAuthorId()},
                 {"created_at", doc.getCreatedAt()},
                 {"updated_at", doc.getUpdatedAt()},
                 {"is_public", doc.isPublic()}});
@@ -161,7 +161,7 @@ nlohmann::json DocumentController::formatDocumentResponse(const Document &doc)
         {"id", doc.getId()},
         {"title", doc.getTitle()},
         {"content", doc.getContent()},
-        {"owner", doc.getOwner()},
+        {"author_id", doc.getAuthorId()},
         {"created_at", doc.getCreatedAt()},
         {"updated_at", doc.getUpdatedAt()},
         {"is_public", doc.isPublic()}};

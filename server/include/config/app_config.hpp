@@ -23,6 +23,11 @@ public:
 
     bool isDebugModeEnabled() const { return true; }
 
+    std::string getSecretKey()
+    {
+        return "secret";
+    }
+
 private:
     AppConfig() = default;
 };
