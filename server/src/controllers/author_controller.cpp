@@ -3,6 +3,7 @@
 #include <models/authors.hpp>
 #include <utils/logger.hpp>
 #include <string>
+#include <controllers/document_controller.hpp>
 
 using json = nlohmann::json;
 
@@ -130,7 +131,14 @@ json AuthorController::formatAuthorResponse(const Author &author, bool send_pass
     response["id"] = author.getId();
     response["name"] = author.getName();
     response["email"] = author.getEmail();
-    response["documents"] = author.getDocuments();
+    
+    // Convert documents to JSON array
+    json documents_json = json::array();
+    for (const auto& doc : author.getDocuments()) {
+        documents_json.push_back(DocumentController::documentToJson(*doc));
+    }
+    response["documents"] = documents_json;
+
     if (send_password)
     {
         response["password"] = author.getPassword();

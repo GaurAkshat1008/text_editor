@@ -15,6 +15,8 @@ public:
     nlohmann::json deleteDocument(int id);
     nlohmann::json searchDocuments(const std::string& query, int author_id);
     
+    static nlohmann::json documentToJson(const Document& doc);
+
 private:
     nlohmann::json formatDocumentResponse(const Document& doc);
     nlohmann::json formatErrorResponse(const std::string& message);

@@ -30,7 +30,7 @@ void AuthRoutes::handleRegisterUser(const request &req, response &res)
         std::string token = JWTManager::getInstance().generateToken(result, AppConfig::getInstance().getSecretKey());
 
         res.result(http::status::created);
-        res.set(http::field::set_cookie, "token=" + token);
+        res.set(http::field::set_cookie, "token=" + token + "; Max-Age=3600; HttpOnly; Secure; SameSite=Strict; Path=/");
         res.set(http::field::content_type, "application/json");
         res.body() = json{{"message", "User registered successfully"}}.dump();
     }
@@ -56,7 +56,7 @@ void AuthRoutes::handleLoginUser(const request &req, response &res)
         std::string token = JWTManager::getInstance().generateToken(result, AppConfig::getInstance().getSecretKey());
 
         res.result(http::status::ok);
-        res.set(http::field::set_cookie, "token=" + token);
+        res.set(http::field::set_cookie, "token=" + token + "; Max-Age=3600; HttpOnly; Secure; SameSite=Strict; Path=/");
         res.set(http::field::content_type, "application/json");
         res.body() = result.dump();
     }
@@ -74,7 +74,7 @@ void AuthRoutes::handleLogoutUser(const request &req, response &res)
     {
         Logger::debug({"Logging out user"});
         res.result(http::status::ok);
-        res.set(http::field::set_cookie, "token=; Max-Age=0");
+        res.set(http::field::set_cookie, "token=; Max-Age=0; HttpOnly; Secure; SameSite=Strict; Path=/");
         res.set(http::field::content_type, "application/json");
         res.body() = json{{"message", "User logged out successfully"}}.dump();
     }

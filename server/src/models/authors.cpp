@@ -67,6 +67,13 @@ bool Author::save()
 
             txn.exec(updateSql);
         }
+        if (id != -1) {
+            // Update existing documents
+            for (const auto& doc : documents) {
+                doc->setAuthorId(id);
+                doc->save();
+            }
+        }
         txn.commit();
         Logger::info({"Author saved successfully with ID: " + std::to_string(id)});
         return true;
@@ -87,9 +94,9 @@ bool Author::remove()
     {
         std::string sql = builder.query("UPDATE authors SET is_deleted = true WHERE id = " + std::to_string(id)).build();
         txn.exec(sql);
-        for (auto docId : documents)
+        for (const auto& doc : documents)
         {
-            std::string deleteDocQuery = builder.deleteFrom("documents").where({{"id", std::to_string(docId), "="}}).build();
+            std::string deleteDocQuery = builder.deleteFrom("documents").where({{"id", std::to_string(doc->getId()), "="}}).build();
             txn.exec(deleteDocQuery);
         }
         txn.commit();
@@ -119,6 +126,7 @@ std::vector<Author> Author::search(const std::string &query)
             Author author(row["name"].as<std::string>(), row["email"].as<std::string>(), "");
             author.id = row["id"].as<int>();
             author.is_deleted = row["is_deleted"].as<bool>();
+            author.populateDocuments();
             authors.push_back(author);
         }
     }
@@ -173,6 +181,7 @@ Author Author::findById(int id)
         Author author(row["name"].as<std::string>(), row["email"].as<std::string>(), "");
         author.id = row["id"].as<int>();
         author.is_deleted = row["is_deleted"].as<bool>();
+        author.populateDocuments();
         return author;
     }
     catch (const std::exception &e)
@@ -200,6 +209,7 @@ Author Author::findByEmail(const std::string &email)
         Author author(row["name"].as<std::string>(), row["email"].as<std::string>(), row["password"].as<std::string>());
         author.id = row["id"].as<int>();
         author.is_deleted = row["is_deleted"].as<bool>();
+        author.populateDocuments();
         return author;
     }
     catch (const std::exception &e)
@@ -209,33 +219,32 @@ Author Author::findByEmail(const std::string &email)
     }
 }
 
-std::vector<std::shared_ptr<Document>> Author::getDocuments()
+const std::vector<std::shared_ptr<Document>>& Author::getDocuments() const
 {
-    std::vector<std::shared_ptr<Document>> documents;
-    try
-    {
-        auto conn = DatabaseManager::getInstance().getConnection();
-        pqxx::work txn(*conn);
-        SQLBuilder builder;
-        std::string sql = builder.select({"*"}).from("documents").where({{"author_id", std::to_string(id), "="}}).build();
-        auto result = txn.exec(sql);
-
-        for (auto row : result)
-        {
-            auto doc = std::make_shared<Document>(
-                row["title"].as<std::string>(),
-                row["content"].as<std::string>(),
-                row["owner"].as<std::string>());
-            doc->setId(row["id"].as<int>());
-            doc->setAuthorId(row["author_id"].as<int>());
-            // Set other fields...
-            documents.push_back(doc);
-        }
-        txn.commit();
-    }
-    catch (const std::exception &e)
-    {
-        Logger::error({"Failed to get author's documents: " + std::string(e.what())});
+    if (documents.empty()) {
+        const_cast<Author*>(this)->populateDocuments();
     }
     return documents;
+}
+
+void Author::populateDocuments() {
+    auto conn = DatabaseManager::getInstance().getConnection();
+    pqxx::work txn(*conn);
+    SQLBuilder builder;
+    std::string sql = builder.select({"*"}).from("documents").where({{"author_id", std::to_string(id), "="}}).build();
+    auto result = txn.exec(sql);
+
+    documents.clear();
+    for (auto row : result) {
+        auto doc = std::make_shared<Document>(
+            row["title"].as<std::string>(),
+            row["content"].as<std::string>(),
+            std::to_string(id));  // Use author_id instead of owner
+        doc->setId(row["id"].as<int>());
+        doc->setAuthorId(id);
+        doc->setPublic(row["is_public"].as<bool>());
+        // Set other document properties as needed
+        documents.push_back(doc);
+    }
+    txn.commit();
 }

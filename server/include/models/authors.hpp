@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include "document.hpp"
 
 class Author
@@ -9,11 +10,12 @@ class Author
 private:
     int id; // Unique
 
-    std::string name;           // Author name
-    std::string email;          // Author email
-    std::string password;       // Author password
-    std::vector<int> documents; // List of document IDs
+    std::string name;     // Author name
+    std::string email;    // Author email
+    std::string password; // Author password
     bool is_deleted;
+    std::vector<std::shared_ptr<Document>> documents;
+    void populateDocuments();
 
 public:
     Author(const std::string &name, const std::string &email, const std::string &password);
@@ -23,7 +25,6 @@ public:
     std::string getName() const { return name; }
     std::string getEmail() const { return email; }
     std::string getPassword() const { return password; }
-    std::vector<int> getDocuments() const { return documents; }
     bool isDeleted() const { return is_deleted; }
 
     // Setters
@@ -40,7 +41,5 @@ public:
     static std::vector<Author> all();
     static Author findById(int id);
     static Author findByEmail(const std::string &email);
-
-    // New method to get related documents
-    std::vector<std::shared_ptr<Document>> getDocuments();
+    const std::vector<std::shared_ptr<Document>> &getDocuments() const;
 };

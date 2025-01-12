@@ -1,19 +1,20 @@
 import "./App.css";
-import Layout from "./app/Layout";
 import {
   Route,
   BrowserRouter as Router,
   Routes,
   Navigate,
 } from "react-router-dom";
-import Login from "./page/auth/Login";
+import Login from "@/page/auth/Login";
+import Layout from "./app/Layout";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="*" element={<Navigate to="/app" />} />
+        <Route path="/" element={<Layout />} />
         <Route path="/auth/login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );

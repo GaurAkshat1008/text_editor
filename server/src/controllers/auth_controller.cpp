@@ -67,9 +67,9 @@ json AuthController::loginUser(const json &userData)
         {
             return formatErrorResponse("Invalid password");
         }
-        Logger::debug({"3"});
 
         Logger::info({"User login completed for email: " + email});
+        authorResponse.erase("password");
         return authorResponse;
     }
     catch (const std::exception &e)
@@ -92,11 +92,11 @@ json AuthController::me(const std::string &token)
 
         if (authorResponse.find("error") != authorResponse.end())
         {
-            Logger::info({"Returning author data for user ID: " + std::to_string(userId)});
-            return authorResponse;
+            return formatErrorResponse("User not found");
         }
 
-        return formatErrorResponse("User not found");
+        Logger::info({"Returning author data for user ID: " + std::to_string(userId)});
+        return authorResponse;
     }
     catch (const std::exception &e)
     {

@@ -157,6 +157,12 @@ nlohmann::json DocumentController::searchDocuments(const std::string &query, int
 
 nlohmann::json DocumentController::formatDocumentResponse(const Document &doc)
 {
+    return documentToJson(doc);
+}
+
+// Static method to convert Document to JSON
+nlohmann::json DocumentController::documentToJson(const Document& doc)
+{
     return json{
         {"id", doc.getId()},
         {"title", doc.getTitle()},
@@ -164,7 +170,8 @@ nlohmann::json DocumentController::formatDocumentResponse(const Document &doc)
         {"author_id", doc.getAuthorId()},
         {"created_at", doc.getCreatedAt()},
         {"updated_at", doc.getUpdatedAt()},
-        {"is_public", doc.isPublic()}};
+        {"is_public", doc.isPublic()}
+    };
 }
 
 nlohmann::json DocumentController::formatErrorResponse(const std::string &message)
